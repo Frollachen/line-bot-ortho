@@ -72,7 +72,6 @@ def handle_message(event):
             message = TextMessage(text=reply)
             body = ReplyMessageRequest(reply_token=event.reply_token, messages=[message])
             messaging_api.reply_message(body)
-        )
     except Exception as e:
         print(f"[LINE 回覆錯誤] {type(e).__name__}: {e}")
         
