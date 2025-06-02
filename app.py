@@ -3,6 +3,7 @@ from linebot.v3.webhook import WebhookHandler
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
 from linebot.v3.messaging.models import TextMessage, ReplyMessageRequest
+from pprint import pprint
 
 import openai
 import os
@@ -38,7 +39,10 @@ def callback():
 # 處理訊息事件（文字）
 @handler.add(MessageEvent)
 def handle_message(event):
+    pprint(vars(event))  # 加這行！印出事件詳細內容
+
     if not isinstance(event.message, TextMessageContent):
+        print("[非文字訊息] 忽略")
         return  # 忽略非文字訊息
 
     user_input = event.message.text
