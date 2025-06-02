@@ -2,12 +2,16 @@ from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 import openai
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
-line_bot_api = LineBotApi('/9w2uFZ7LBgzC50osJKO0NMqR4gBxXxGil/uyFZVAXouBIwVmurXN8LYmGdpw39x75fVuYLwaBIwaQc70dkXC8YcYk7z2ZvFtwQkoPgMOc0mMf9bISpr7D7ejtHcDoLqZ/2kc+nW3LOmgMLCbLLWCwdB04t89/1O/w1cDnyilFU=')
-handler = WebhookHandler('3c96eed1540f59195e207c66331e4139')
-openai.api_key = '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'
+line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
+handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # 這是限制對話範圍的 system prompt
 system_prompt = """
