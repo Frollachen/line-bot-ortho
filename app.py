@@ -6,6 +6,7 @@ import os
 
 app = Flask(__name__)
 
+# 讀取環境變數
 line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
 handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -22,29 +23,41 @@ system_prompt = """
 
 @app.route("/callback", methods=['POST'])
 def callback():
-    signature = request.headers['X-Line-Signature']
+    signature = request.headers.get('X-Line-Signature')
     body = request.get_data(as_text=True)
 
-try:
-    handler.handle(body, signature)
-except Exception as e:
-    print(f"[Webhook Error] {e}")
-    abort(400)
+    # 印出訊息以方便除錯
+    print("📥 Received body:", body)
+    print("🖋️ Signature:", signature)
+
+    try:
+        handler.handle(body, signature)
+    except Exception as e:
+        print("🚨 Webhook error:", str(e))
+        abort(400)
 
     return 'OK'
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_input = event.message.text
+    print(f"👤 使用者說: {user_input}")
 
-    completion = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_input}
-        ]
-    )
-    reply = completion['choices'][0]['message']['content']
+    try:
+        # 呼叫 OpenAI API
+        completion = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": user_input}
+            ]
+        )
+        reply = completion['choices'][0]['message']['content']
+    except Exception as e:
+        print("❌ OpenAI 回覆錯誤:", str(e))
+        reply = "很抱歉，目前系統暫時無法回覆您的問題。"
+
+    # 回覆使用者
     line_bot_api.reply_message(
         event.reply_token,
         TextSendMessage(text=reply)
