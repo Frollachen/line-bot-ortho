@@ -3,10 +3,10 @@ from linebot.v3.webhook import WebhookHandler
 from linebot.v3.webhooks import MessageEvent, TextMessageContent
 from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
 from linebot.v3.messaging.models import TextMessage, ReplyMessageRequest
-from pprint import pprint
 
 import openai
 import os
+from pprint import pprint  # 用來 debug 印出 event
 
 app = Flask(__name__)
 
@@ -31,24 +31,21 @@ def callback():
     try:
         handler.handle(body, signature)
     except Exception as e:
-        print(f"[Webhook Error] {e}")
+        print(f"[Webhook Error] {type(e).__name__}: {e}")
         abort(400)
 
     return "OK"
 
-# 處理訊息事件（文字）
-@handler.add(MessageEvent)
+# 處理文字訊息事件
+@handler.add(MessageEvent, message=TextMessageContent)
 def handle_message(event):
-    pprint(vars(event))  # 加這行！印出事件詳細內容
-
-    if not isinstance(event.message, TextMessageContent):
-        print("[非文字訊息] 忽略")
-        return  # 忽略非文字訊息
+    print("[收到 LINE 訊息事件]")
+    pprint(vars(event))  # 印出整個 event 結構方便除錯
 
     user_input = event.message.text
     print(f"[使用者輸入] {user_input}")
 
-    # 呼叫 OpenAI API
+    # 呼叫 OpenAI API 回覆
     try:
         completion = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
@@ -73,10 +70,11 @@ def handle_message(event):
                 messages=[reply]
             )
             messaging_api.reply_message(body)
+            print("[已成功回覆給使用者]")
     except Exception as e:
         print(f"[LINE 回覆錯誤] {type(e).__name__}: {e}")
 
-# 本地執行用
+# 主頁：顯示 bot 有在運作
 @app.route("/")
 def index():
     return "骨科衛教 BOT 正在運作中！"
