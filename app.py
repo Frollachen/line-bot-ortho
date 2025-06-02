@@ -28,6 +28,9 @@ def callback():
     signature = request.headers.get("X-Line-Signature")
     body = request.get_data(as_text=True)
 
+    print("[Webhook 收到訊息原始內容]")
+    print(body)  # 新增這行，直接印原始 JSON
+
     try:
         handler.handle(body, signature)
     except Exception as e:
