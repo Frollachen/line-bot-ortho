@@ -1,6 +1,8 @@
 from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.v3.webhook import WebhookHandler
+from linebot.v3.messaging import MessagingApi, Configuration, ApiClient
+from linebot.v3.messaging.models import TextMessage, TextMessageContent, ReplyMessageRequest
+from linebot.v3.webhook.models import MessageEvent
 import openai
 import os
 
@@ -16,8 +18,8 @@ print(f"[環境檢查] LINE TOKEN: {'✅' if line_token else '❌'}")
 print(f"[環境檢查] LINE SECRET: {'✅' if line_secret else '❌'}")
 print(f"[環境檢查] OPENAI KEY: {'✅' if openai_key else '❌'}")
 
-line_bot_api = LineBotApi(line_token)
-handler = WebhookHandler(line_secret)
+configuration = Configuration(access_token=os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
+handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
 openai.api_key = openai_key
 
 # 限制主題的 system prompt
@@ -65,9 +67,11 @@ def handle_message(event):
     print(f"[GPT 回覆內容] {reply}")
 
     try:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text=reply)
+        with ApiClient(configuration) as api_client:
+            messaging_api = MessagingApi(api_client)
+            message = TextMessage(text=reply)
+            body = ReplyMessageRequest(reply_token=event.reply_token, messages=[message])
+            messaging_api.reply_message(body)
         )
     except Exception as e:
         print(f"[LINE 回覆錯誤] {type(e).__name__}: {e}")
