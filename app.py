@@ -1,8 +1,8 @@
 from flask import Flask, request, abort
-from linebot.v3.webhook import WebhookHandler
-from linebot.v3.messaging import MessagingApi, Configuration, ApiClient
-from linebot.v3.messaging.models import TextMessage, TextMessageContent, ReplyMessageRequest
-from linebot.v3.webhook.models import MessageEvent
+from linebot.v3.17.1.webhook import WebhookHandler
+from linebot.v3.17.1.messaging import MessagingApi, Configuration, ApiClient
+from linebot.v3.17.1.messaging.models import TextMessage, ReplyMessageRequest
+from linebot.v3.17.1.webhook.models import MessageEvent
 import openai
 import os
 
