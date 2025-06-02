@@ -6,10 +6,9 @@ import os
 
 app = Flask(__name__)
 
-# 從環境變數讀取金鑰（安全！）
-line_bot_api = LineBotApi(os.environ.get("LINE_CHANNEL_ACCESS_TOKEN"))
-handler = WebhookHandler(os.environ.get("LINE_CHANNEL_SECRET"))
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+line_bot_api = LineBotApi(os.getenv("LINE_CHANNEL_ACCESS_TOKEN"))
+handler = WebhookHandler(os.getenv("LINE_CHANNEL_SECRET"))
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # 限制對話主題的 system prompt
 system_prompt = """
@@ -26,11 +25,11 @@ def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)
 
-    try:
-        handler.handle(body, signature)
-    except Exception as e:
-        print(f"[Webhook Error] {e}")  # 印出錯誤方便除錯
-        abort(400)
+try:
+    handler.handle(body, signature)
+except Exception as e:
+    print(f"[Webhook Error] {e}")
+    abort(400)
 
     return 'OK'
 
