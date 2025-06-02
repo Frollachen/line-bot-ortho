@@ -51,7 +51,7 @@ def handle_message(event):
 
     try:
         completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",  # ← 可改成 gpt-4
+            model="gpt-3.5-turbo",  # 或 gpt-3.5-turbo 看妳的帳號權限
             messages=[
                 {"role": "system", "content": "你是一位專業護理師，請只針對骨科手術病患的衛教問題回答，包含手術前準備、手術後護理與復健、返家照護、照顧者的相關注意事項等，請不要回答超出這些範圍的問題。"},
                 {"role": "user", "content": user_input}
@@ -59,10 +59,10 @@ def handle_message(event):
         )
         reply = completion['choices'][0]['message']['content']
     except Exception as e:
-        print(f"[OpenAI API Error] {e}")
+        print(f"[OpenAI API Error] {type(e).__name__}: {e}")
         reply = "很抱歉，目前系統暫時無法回覆您的問題。"
 
-    print(f"[GPT 回覆] {reply}")
+    print(f"[GPT 回覆內容] {reply}")
 
     try:
         line_bot_api.reply_message(
@@ -70,7 +70,7 @@ def handle_message(event):
             TextSendMessage(text=reply)
         )
     except Exception as e:
-        print(f"[LINE 回覆錯誤] {e}")
-
+        print(f"[LINE 回覆錯誤] {type(e).__name__}: {e}")
+        
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
