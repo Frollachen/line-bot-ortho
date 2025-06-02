@@ -31,14 +31,15 @@ def callback():
     try:
         handler.handle(body, signature)
     except Exception as e:
-        abort(400)
-    return 'OK'
+    print(f"[Webhook Error] {e}")  # 印出錯誤訊息
+    abort(400)
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
     user_input = event.message.text
 
     # 呼叫 GPT 模型回覆
+try:
     completion = openai.ChatCompletion.create(
         model="gpt-4",
         messages=[
@@ -47,10 +48,14 @@ def handle_message(event):
         ]
     )
     reply = completion['choices'][0]['message']['content']
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=reply)
-    )
+except Exception as e:
+    print(f"[OpenAI Error] {e}")
+    reply = "抱歉，目前無法取得回覆，請稍後再試～"
+
+line_bot_api.reply_message(
+    event.reply_token,
+    TextSendMessage(text=reply)
+)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
